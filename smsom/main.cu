@@ -1442,16 +1442,18 @@ int initFrame = 1;
 
 int main(int argv, char* argc[]){
 
-	if(argv != 3){
-		cout<<"The command format is: smsom input_file_name output_file_name"<<endl;
-		cout<<"For example: smsom CDnet\\dataset\\dynamicBackground\\boats\\input\\in%06d.jpg CDnet\\results\\dynamicBackground\\boats\\S3SOM3\\bin%06d.png"<<endl;
+	if(argv != 5){
+		cout<<"The command format is: smsom <start_frame_nubmer> <end_frame_number> <input_file_name> <output_file_name>"<<endl;
+		cout<<"For example: smsom 1 100 CDnet\\dataset\\dynamicBackground\\boats\\input\\in%06d.jpg CDnet\\results\\dynamicBackground\\boats\\S3SOM3\\bin%06d.png"<<endl;
 		return 0;
 	}
 
 	char path[200];
 	char outputPath[200];
-	strcpy(path, argc[1]);
-	strcpy(outputPath, argc[2]);
+	strcpy(path, argc[3]);
+	strcpy(outputPath, argc[4]);
+	startFrame = atoi(argc[1]);
+	endFrame = atoi(argc[2]);
 
 	//char path[200] = "E:\\PreviousResearch\\Data\\CDnet\\CDnet\\dataset\\dynamicBackground\\boats\\input\\in%06d.jpg";
 	char fileName[200];
@@ -1460,6 +1462,10 @@ int main(int argv, char* argc[]){
 
 	//test whether input is legal
 	{
+		if(startFrame > endFrame){
+			cout<<"Start frame number is not illegal, please retry!"<<endl;
+			return 0;
+		}
 		Mat frame;
 		sprintf(fileName, path, initFrame);//read the first frame
 		frame = imread(fileName, CV_LOAD_IMAGE_COLOR);
