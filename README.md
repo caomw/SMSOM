@@ -28,7 +28,7 @@ For Windows users:
 2. navigate to Debug
 
 
-3. execute: smsom <start_frame_number> <end_frame_number> <input_file_name> <output_file_name>
+3. execute: smsom \<start_frame_number> <end_frame_number> <input_file_name> <output_file_name>
 
 
 
