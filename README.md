@@ -27,16 +27,18 @@ CUDA 5.0
 * navigate to Debug
 
 
-* execute: `smsom \<start_frame_number> \<end_frame_number> \<input_file_name> \<output_file_name>`
+* execute: `smsom <start_frame_number> <end_frame_number> <input_file_name> <output_file_name>`
 
 
 
-For example, if I put the input images in: E:\Data\CDnet\CDnet\dataset\dynamicBackground\boats\input, 
-the image files' name format is: in000001.jpg (any number), and I use 1-100 images to train the model, then I can execute:
+For example, if I put the input images in: *E:\Data\*, 
+the image files' name format is: *in000001.jpg* (any number), and I use 1-100 images to train the model, then I can execute:
 
 
 
-smsom 1 100 E:\\\Data\\\CDnet\\\CDnet\\\dataset\\\dynamicBackground\\\boats\\\input\\\in%06d.jpg E:\\\Data\\\CDnet\\\CDnet\\\results\\\dynamicBackground\\\boats\\\S3SOM3\\\bin%06d.png
+`smsom 1 100 E:\\Data\\in%06d.jpg E:\\Data\\bin%06d.png` 
+
+where I put the result images in *E:\Data\*.
 
 
 ###For Linux users:
