@@ -18,7 +18,7 @@ CUDA 5.0
 
 #How to use
 
-##For Windows users:
+###For Windows users:
 
 
 
@@ -41,7 +41,7 @@ the image files' name format is: in000001.jpg (any number), and I use 1-100 imag
 smsom 1 100 E:\\\Data\\\CDnet\\\CDnet\\\dataset\\\dynamicBackground\\\boats\\\input\\\in%06d.jpg E:\\\Data\\\CDnet\\\CDnet\\\results\\\dynamicBackground\\\boats\\\S3SOM3\\\bin%06d.png
 
 
-##For Linux users:
+###For Linux users:
 
 
 You have to build yourself. The source code of 3 layer SMSOM-BM is .\smsom\main.cu, and you can refer to [2] for how to use CUDA on Linux platform.
