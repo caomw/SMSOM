@@ -21,13 +21,13 @@ CUDA 5.0
 ###For Windows users:
 
 
-*open cmd
+* open cmd
 
 
-*navigate to Debug
+* navigate to Debug
 
 
-*execute: smsom \<start_frame_number> \<end_frame_number> \<input_file_name> \<output_file_name>
+* execute: smsom \<start_frame_number> \<end_frame_number> \<input_file_name> \<output_file_name>
 
 
 
