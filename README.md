@@ -34,12 +34,12 @@ An implementation of our unpublished paper **[1]**, and the experiment results o
 
 
 
-For example, if I put the input images in: **E:\Data\**, 
+For example, if I put the input images in: **E:\Data\input\**, 
 the image files' name format is: **in000001.jpg** (any number), and I use 1-100 images to train the model, then I can execute:
 
 
 
-`smsom 1 100 E:\\Data\\in%06d.jpg E:\\Data\\bin%06d.png` 
+`smsom 1 100 E:\\Data\\input\\in%06d.jpg E:\\Data\\results\\bin%06d.png` 
 
 where I put the result images in **E:\Data\**.
 
