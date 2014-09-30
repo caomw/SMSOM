@@ -39,7 +39,7 @@ the image files' name format is: **in000001.jpg** (any number), and I use 1-100 
 
 
 
-`smsom 1 100 E:\\Data\\input\\in%06d.jpg E:\\Data\\results\\bin%06d.png` 
+`smsom 1 100 E:\\Data\\input\\in%06d.jpg E:\\Data\\results\\bin%06d.png`,
 
 where I put the result images in **E:\Data\**.
 
