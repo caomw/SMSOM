@@ -31,20 +31,24 @@ The exutable binary file is .\Debug\smsom.exe; therefore, you should first use *
 
 Then you have two options:
 
+* If you have foreground free traning images, then execute:
 
-* execute: `smsom <start_frame_number> <end_frame_number> <input_file_name> <output_file_name>`
+`smsom train <start_frame_number> <end_frame_number> <input_file_name> <output_file_name>`
 
-
+where `<start_frame_number>` and `<end_frame_number>` stand for the index range of the training images; `<input_file_name>` is the format of the input image's name, and the last parameter `<output_file_name>` is optional, if you omit it, then the output images are just shown in you screen, but not store in your computer. 
 
 For example, if I put the input images in: **E:\Data\input\**, 
 the image files' name format is: **in000001.jpg** (any number), and I use 1-100 images to train the model, then I can execute:
 
+`smsom train 1 100 E:\\Data\\input\\in%06d.jpg E:\\Data\\results\\bin%06d.png`
 
+where I put the result images in **E:\Data\results**.
 
-`smsom 1 100 E:\\Data\\input\\in%06d.jpg E:\\Data\\results\\bin%06d.png`,
+or
 
-where I put the result images in **E:\Data\**.
+`smsom train 1 100 E:\\Data\\input\\in%06d.jpg`
 
+where I do not store the output images.
 
 ###For Linux users:
 
