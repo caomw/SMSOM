@@ -1,3 +1,5 @@
+#maintaining now!
+
 #Stacked Multi-layer Self-Organizing Map for Background Modeling (SMSOM-BM)
 
 An implementation of our unpublished paper **[1]**, and the experiment results of **[1]** are based on it. If you have any question, please feel free to contact zhaozj89@gmail.com.
