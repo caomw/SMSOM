@@ -1,22 +1,38 @@
+//////////////////////////////////////////////////////////////////////////
+/// An implementation of our paper [1], see https://github.com/zhaozj89/SMSOM for more details.
+/// If you have any question, please feel free to contact zhaozj89@gmail.com
+///
+/// created 01/2014
+/// revised#1 02/2014
+/// revised#2 06/2014
+/// revised#3 08/2014
+/// revised#4 10/2014
+///
+/// [1] Zhenjie Zhao, Xuebo Zhang, and Yongchun Fang. Stacked Multi-layer Self-Organizing Map for Background Modeling.
+//////////////////////////////////////////////////////////////////////////
 
-//cuda5.0
+/// cuda5.0
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include <device_functions.h>
-//OpenCV
+
+/// OpenCV
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
-//std
+
+/// std
 #include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
-//
+
+///
 using namespace cv;
 using namespace std;
 
+///
 __device__ const float PI = 3.1415926;
 __device__ float gaussKernel[3][3] = {1/16.0, 2/16.0, 1/16.0, 2/16.0, 4/16.0, 2/16.0, 1/16.0, 2/16.0, 1/16.0};
 
@@ -53,10 +69,10 @@ __device__ float distance(float h1, float s1, float v1,
 			pow(v1 - v2, 2));
 }
 
-//
+///
 __global__ void initLayer(float* input, float* output, int width){
 	int x = blockDim.x*blockIdx.x + threadIdx.x;
-	int y = blockDim.y*blockIdx.y + threadIdx.y;//thread index
+	int y = blockDim.y*blockIdx.y + threadIdx.y; /// thread index
 
 	for (int j=0; j<3; ++j){
 		for (int i=0; i<3; ++i){
@@ -65,7 +81,7 @@ __global__ void initLayer(float* input, float* output, int width){
 	}
 }
 
-//
+///
 __global__ void compete(float* modelH, float* modelS, float* modelV, 
 	float* frameH, float* frameS, float* frameV, 
 	bool* match, int width){
@@ -267,7 +283,7 @@ __global__ void competeWithFilter2(float* model1H, float* model1S, float* model1
 		}//if
 }
 
-//update the background model
+/// update the background model
 __global__ void cooperate(float* modelH, float* modelS, float* modelV, 
 	float* backupH, float* backupS, float* backupV,
 	float* frameH, float* frameS, float* frameV,
@@ -1410,6 +1426,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 		}
 }
 	
+/// with training
 __global__ void calculateThreshold(float* meanValue, float* maxValue,
 	int width){
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
@@ -1423,21 +1440,36 @@ __global__ void calculateThreshold(float* meanValue, float* maxValue,
 			}
 		}
 		maxValue[y*width+x] = tempMax;
+}
 
-		//TEMPORARY
+/// without training, we set the minimum value of tao as 0.06
+__global__ void calculateThresholdWithoutTraining(float* meanValue, float* maxValue,
+	int width){
+		int x = blockDim.x*blockIdx.x + threadIdx.x;
+		int y = blockDim.y*blockIdx.y + threadIdx.y;
+
+		float tempMax = meanValue[(y*3)*width*3+(x*3)];
+		for (int j = 0; j < 3; ++j){
+			for (int i = 0; i < 3; ++i){
+				if( meanValue[(y*3+j)*width*3+(x*3+i)]>=tempMax )
+					tempMax = meanValue[(y*3+j)*width*3+(x*3+i)];
+			}
+		}
+		maxValue[y*width+x] = tempMax;
+
+		/// can be adjusted by hand
 		if( maxValue[y*width+x]<= 0.06 )
 			maxValue[y*width+x] = 0.06;
 }
 
-int thresholdK = 200;
-float yipuxilu1 = 0.1;
-float yipuxilu2 = 0.03;
+// int thresholdK = 200;
+// float yipuxilu1 = 0.1;
+// float yipuxilu2 = 0.03;
 float c1 = 1;
 float c2 = 0.03;
-float alphaLearning = c1*4; // c1/max weight of the Gaussian kernel
-float alphaAdaption = c2*4; // c2/max weight of the Gaussian kernel
+float alphaLearning = c1*4; /// c1/max weight of the Gaussian kernel
+float alphaAdaption = c2*4; /// c2/max weight of the Gaussian kernel
 int startFrame = 2, endFrame = 50;
-//int endFrame2 = 5400;
 int initFrame = 1;
 
 int main(int argv, char* argc[]){
