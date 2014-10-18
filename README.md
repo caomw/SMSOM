@@ -40,7 +40,7 @@ Then you have two options:
   For example, if I put the input images in: **E:\Data\input\**, 
   the image files' name format is: **in000001.jpg** (any number), and I use 1-100 images to train the model, then I can execute:
 
-  `smsom train 1 100 E:\\Data\\input\\in%06d.jpg E:\\Data\\results\\bin%06d.png`
+  `smsom train 1 100 E:\\Data\\input\\in%06d.jpg E:\\Data\\results\\bin%06d.jpg`
 
   where I put the result images in **E:\Data\results**.
 
@@ -49,6 +49,13 @@ Then you have two options:
   `smsom train 1 100 E:\\Data\\input\\in%06d.jpg`
 
   where I do not store the output images.
+  
+* If you do not have foreground free training images, you can execute:
+  
+  `smsom nottrain <input_file_name> <output_file_name>`
+
+  where the meanings of `<input_file_name>` and `<output_file_name>` (optional) are the same as the previous case. In this    
+  situation, we set the threshold $tau=0.06$. 
  
 ###For Linux users:
 
