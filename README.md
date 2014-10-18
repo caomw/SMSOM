@@ -55,7 +55,7 @@ Then you have two options:
   `smsom nottrain <input_file_name> <output_file_name>`
 
   where the meanings of `<input_file_name>` and `<output_file_name>` (optional) are the same as the previous case. In this    
-  situation, we set the threshold $tau=0.06$. 
+  situation, we set the threshold tau=0.06 (see **[1]** for more details). 
  
 ###For Linux users:
 
@@ -63,9 +63,16 @@ Then you have two options:
 You have to build yourself. The source code of 3 layer SMSOM-BM is **.\smsom\main.cu**, and you can refer to **[2]** for how to use CUDA on Linux platform.
 
 
-Dataset
+Demos
 =====
-The dataset used in our paper can be downloaded at **[3]**.
+We have created some demo scripts (see **.\Debug**) to show the performance of the method. You can use them by:
+
+* download the dataset from **[3]**
+* decompress the dataset
+* copy @@ into **E:\Data\input\**
+* navigate to **.\Debug**, and double click **demo1.bat** (perfectly safe)
+
+You can try more data if you get used to this pattern of using this software.
 
 
 
