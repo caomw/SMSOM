@@ -4,7 +4,7 @@
 
 An implementation of our unpublished paper **[1]**, and the experiment results of **[1]** are based on it. If you have any question, please feel free to contact zhaozj89@gmail.com.
 
-#Working environment
+#Preferred working environment
 
 * Windows 7 (64bit)
 
@@ -26,7 +26,7 @@ An implementation of our unpublished paper **[1]**, and the experiment results o
 ###For Windows users:
 
 
-The exutable binary file is .\Debug\smsom.exe; therefore, you should first use **cmd** in Windows to navigate to the directory **Debug**. Please ENSURE Windows can find OpenCV library, and you have CUDA compatible GPU installed in your computer.
+The exutable binary file is **.\Debug\smsom.exe**; therefore, you should first use **cmd** in Windows to navigate to the directory **Debug**. Please ENSURE Windows can find OpenCV library, and you have CUDA compatible GPU installed in your computer.
 
 
 Then you have two options:
@@ -65,7 +65,7 @@ You have to build yourself. The source code of 3 layer SMSOM-BM is **.\smsom\mai
 
 Demos
 =====
-We have created some demo scripts (see **.\Debug**) to show the performance of the method. You can use them by:
+We have created some demo scripts (see **.\Debug\**) to show the performance of the method. You can use them by:
 
 * download the dataset from **[3]**
 * decompress the dataset
