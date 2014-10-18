@@ -54,8 +54,7 @@ Then you have two options:
   
   `smsom nottrain <input_file_name> <output_file_name>`
 
-  where the meanings of `<input_file_name>` and `<output_file_name>` (optional) are the same as the previous case. In this    
-  situation, we set the threshold tau=0.06 (see **[1]** for more details). 
+  where the meanings of `<input_file_name>` and `<output_file_name>` (optional) are the same as the previous case. In this situation, we set the threshold tau=0.06 (see **[1]** for more details). 
  
 ###For Linux users:
 
