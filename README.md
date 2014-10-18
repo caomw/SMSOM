@@ -71,7 +71,7 @@ We have created some demo scripts (see **.\Debug\**) to show the performance of 
 * copy @@ into **E:\Data\input\**
 * navigate to **.\Debug**, and double click **demo1.bat** (perfectly safe)
 
-You can try more data if you get used to this pattern of using this software.
+You can try more data if you get used to this pattern of using the software.
 
 
 
