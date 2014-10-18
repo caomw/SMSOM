@@ -26,10 +26,10 @@ An implementation of our unpublished paper **[1]**, and the experiment results o
 ###For Windows users:
 
 
-The exutable binary file is .\Debug\smsom.exe; therefore, you should first use cmd in Windows to navigate to the directory **Debug**. Please ensure Windows can find OpenCV library in your computer, and you have CUDA compatible GPU installed in your computer.
+The exutable binary file is .\Debug\smsom.exe; therefore, you should first use **cmd** in Windows to navigate to the directory **Debug**. Please ENSURE Windows can find OpenCV library, and you have CUDA compatible GPU installed in your computer.
 
 
-* navigate to Debug
+Then you have two options:
 
 
 * execute: `smsom <start_frame_number> <end_frame_number> <input_file_name> <output_file_name>`
