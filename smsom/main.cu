@@ -1440,6 +1440,10 @@ __global__ void calculateThreshold(float* meanValue, float* maxValue,
 			}
 		}
 		maxValue[y*width+x] = tempMax;
+
+		/// can be adjusted by hand
+		//if( maxValue[y*width+x]<= 0.06 )
+		//	maxValue[y*width+x] = 0.06;
 }
 
 /// without training, we set the minimum value of tao as 0.06
@@ -1462,9 +1466,19 @@ __global__ void calculateThresholdWithoutTraining(float* meanValue, float* maxVa
 			maxValue[y*width+x] = 0.06;
 }
 
-// int thresholdK = 200;
-// float yipuxilu1 = 0.1;
-// float yipuxilu2 = 0.03;
+void help(){
+	cout<<">----------------------------------------------------------------------------------------------------------------<"<<endl<<endl;
+	cout<<"The command format is:"<<endl<<endl;
+	cout<<"1. smsom train <start_frame_number> <end_frame_number> <input_file_name> <output_file_name>"<<endl<<endl;
+	cout<<"2. smsom train <start_frame_number> <end_frame_number> <input_file_name>"<<endl<<endl;
+	cout<<"3. smsom nottrain <input_file_name> <output_file_name>"<<endl<<endl;
+	cout<<"4. smsom nottrain <input_file_name> <output_file_name>"<<endl<<endl;
+	cout<<"Please see https://github.com/zhaozj89/SMSOM for more details"<<endl<<endl;
+	cout<<"Press 'q' to exit"<<endl<<endl;
+	cout<<">----------------------------------------------------------------------------------------------------------------<"<<endl;
+}
+
+/// 
 float c1 = 1;
 float c2 = 0.03;
 float alphaLearning = c1*4; /// c1/max weight of the Gaussian kernel
@@ -1472,43 +1486,88 @@ float alphaAdaption = c2*4; /// c2/max weight of the Gaussian kernel
 int startFrame = 2, endFrame = 50;
 int initFrame = 1;
 
+///
+bool IsTraining;
+bool IsOuput;
+char fileName[200];
+char outputFileName[200];
+char path[200];
+char outputPath[200];
+//char path[200] = "E:\\PreviousResearch\\Data\\CDnet\\CDnet\\dataset\\dynamicBackground\\boats\\input\\in%06d.jpg";
+//char outputPath[200] = "E:\\PreviousResearch\\Data\\CDnet\\CDnet\\results\\dynamicBackground\\boats\\S3SOM3\\bin%06d.png";
+
 int main(int argv, char* argc[]){
 
-	if(argv != 5){
-		cout<<"The command format is: smsom <start_frame_nubmer> <end_frame_number> <input_file_name> <output_file_name>"<<endl;
-		cout<<"For example: smsom 1 100 CDnet\\dataset\\dynamicBackground\\boats\\input\\in%06d.jpg CDnet\\results\\dynamicBackground\\boats\\S3SOM3\\bin%06d.png"<<endl;
+	///
+	if(argv < 3){
+		help();
 		return 0;
 	}
 
-	char path[200];
-	char outputPath[200];
-	strcpy(path, argc[3]);
-	strcpy(outputPath, argc[4]);
-	startFrame = atoi(argc[1]);
-	endFrame = atoi(argc[2]);
+	///
+	string p2(argc[1]);
+	string tempTrain = "train";
+	string tempNottrain = "nottrain";
+	if(p2 == tempTrain) IsTraining = true;
+	else if(p2 == tempNottrain) IsTraining = false;
+	else{
+		help();
+		return 0;
+	}
 
-	//char path[200] = "E:\\PreviousResearch\\Data\\CDnet\\CDnet\\dataset\\dynamicBackground\\boats\\input\\in%06d.jpg";
-	char fileName[200];
-	//char outputPath[200] = "E:\\PreviousResearch\\Data\\CDnet\\CDnet\\results\\dynamicBackground\\boats\\S3SOM3\\bin%06d.png";
-	char outputFileName[200];
+	///
+	if(IsTraining == true){
+		if(argv == 6){
+			startFrame = atoi(argc[2]);
+			endFrame = atoi(argc[3]);
+			strcpy(path, argc[4]);
+			strcpy(outputPath, argc[5]);
+			IsOuput = true;
+		}
+		else if(argv == 5){
+			startFrame = atoi(argc[2]);
+			endFrame = atoi(argc[3]);
+			strcpy(path, argc[4]);
+			IsOuput = false;
+		}
+		else{
+			help();
+			return 0;
+		}
+	}
+	else{
+		if(argv == 4){
+			strcpy(path, argc[2]);
+			strcpy(outputPath, argc[3]);
+			IsOuput = true;
+		}
+		else if(argv == 3){
+			strcpy(path, argc[2]);
+			IsOuput = false;
+		}
+		else{
+			help();
+			return 0;
+		}
+	}
 
-	//test whether input is legal
+	/// test whether input is legal
 	{
 		if(startFrame > endFrame){
-			cout<<"Start frame number is not illegal, please retry!"<<endl;
+			cout<<"<start_frame_number> or <end_frame_number> is  illegal, please retry!"<<endl;
 			return 0;
 		}
 		Mat frame;
 		sprintf(fileName, path, initFrame);//read the first frame
 		frame = imread(fileName, CV_LOAD_IMAGE_COLOR);
 		if(frame.empty()){
-			cout<<"Input file name is illegal, please retry!"<<endl;
+			cout<<"<input_file_name> is illegal, please retry!"<<endl;
 			return 0;
 		}
 	}
 
 	Mat frame;
-	sprintf(fileName, path, initFrame);//read the first frame
+	sprintf(fileName, path, initFrame); /// read the first frame
 	frame = imread(fileName, CV_LOAD_IMAGE_COLOR);
 	int width = frame.cols;
 	int height = frame.rows;
@@ -1549,16 +1608,17 @@ int main(int argv, char* argc[]){
 	cudaMalloc((void**)&gpuOutput, width*height*sizeof(float));
 	cudaMalloc((void**)&gpuOutputBackup, width*height*sizeof(float));
 
-	dim3 grid(width/16, height/16, 1);//TODO: ( (width-1)/16+1, (height-1)/16+1, 1 )
+	dim3 grid(width/16, height/16, 1); /// TODO: ( (width-1)/16+1, (height-1)/16+1, 1 )
 	dim3 block(16, 16, 1);
 
-	//Stacked Multi-layer Self Organizing Map Background Model (in this code, 3 layers)
+	/// Stacked Multi-layer Self Organizing Map Background Model (in this code, 3 layers)
+	/// A layer is composed of 2 parts: train and log
 
-	//initialize layer 1
+	/// initialize layer 1
 	for(int i = 0; i < 3; ++i)
 		initLayer<<<grid, block>>>(gpuInput[i], gpuLayer1[i], width);
 
-	//train layer 1
+	/// train layer 1
 	cout<<"start training layer 1 ... ..."<<endl;
 	for(int i = startFrame; i <= endFrame; ++i){
 		if(i%100 == 0)
@@ -1589,13 +1649,13 @@ int main(int argv, char* argc[]){
 			width, height, alphaLearning);
 	}
 
-	//log layer 1
+	/// log layer 1
 	float* gpuMeanDistance1;
 	float* gpuMaxDistance1;
 	cudaMalloc((void**)&gpuMeanDistance1, width*height*3*3*sizeof(float));
 	cudaMalloc((void**)&gpuMaxDistance1, width*height*sizeof(float));
 	
-	//first frame
+	/// first frame
 	sprintf(fileName, path, initFrame);
 	frame = imread(fileName);
 	frame.convertTo(frameFloat, CV_32FC3);
@@ -1632,11 +1692,18 @@ int main(int argv, char* argc[]){
 			gpuMeanDistance1, width);
 	}
 
-	//
-	calculateThreshold<<<grid, block>>>(gpuMeanDistance1, 
-		gpuMaxDistance1, width);
+	///
+	if(IsTraining == true){
+		calculateThreshold<<<grid, block>>>(gpuMeanDistance1, 
+			gpuMaxDistance1, width);
+	}
+	else{
+		calculateThresholdWithoutTraining<<<grid, block>>>(gpuMeanDistance1, 
+			gpuMaxDistance1, width);
+	}
 
-	//train layer 2
+
+	/// train layer 2
 	vector<float*> gpuLayer2(3);
 	vector<float*> gpuLayer2Backup(3);
 	bool* gpuMatch2;
@@ -1646,7 +1713,7 @@ int main(int argv, char* argc[]){
 	}
 	cudaMalloc((void**)&gpuMatch2, width*height*3*3*sizeof(bool));
 
-	//first frame
+	/// first frame
 	sprintf(fileName, path, initFrame);
 	frame = imread(fileName);
 	frame.convertTo(frameFloat, CV_32FC3);
@@ -1656,7 +1723,7 @@ int main(int argv, char* argc[]){
 	for(int i = 0; i < 3; ++i)
 		cudaMemcpy(gpuInput[i], input[i].data, width*height*sizeof(float), cudaMemcpyHostToDevice);
 	for(int i = 0; i < 3; ++i)
-		initLayer<<<grid, block>>>(gpuInput[i], gpuLayer2[i], width);//TODO: better initialization
+		initLayer<<<grid, block>>>(gpuInput[i], gpuLayer2[i], width); /// TODO: better initialization
 
 	cout<<"start training layer 2 ... ..."<<endl;
 	for(int i = startFrame; i <= endFrame; ++i){
@@ -1692,13 +1759,13 @@ int main(int argv, char* argc[]){
 			width, height, alphaLearning);
 	}
 
-	//log layer 2
+	/// log layer 2
 	float* gpuMeanDistance2;
 	float* gpuMaxDistance2;
 	cudaMalloc((void**)&gpuMeanDistance2, width*height*3*3*sizeof(float));
 	cudaMalloc((void**)&gpuMaxDistance2, width*height*sizeof(float));
 
-	//first frame
+	/// first frame
 	sprintf(fileName, path, initFrame);
 	frame = imread(fileName);
 	frame.convertTo(frameFloat, CV_32FC3);
@@ -1737,15 +1804,17 @@ int main(int argv, char* argc[]){
 			gpuMeanDistance2, width);
 	}
 
-	//
-	calculateThreshold<<<grid, block>>>(gpuMeanDistance2, 
-		gpuMaxDistance2, width);
+	///
+	if(IsTraining == true){
+		calculateThreshold<<<grid, block>>>(gpuMeanDistance1, 
+			gpuMaxDistance1, width);
+	}
+	else{
+		calculateThresholdWithoutTraining<<<grid, block>>>(gpuMeanDistance1, 
+			gpuMaxDistance1, width);
+	}
 
-	//////////////////////////////////////////////////////////////////////////
-	//TODO: add layer 3
-	//A layer is composed of 2 parts: train and log, and each part contains the first frame operation
-	//
-	//train layer 3
+	/// train layer 3
 	vector<float*> gpuLayer3(3);
 	vector<float*> gpuLayer3Backup(3);
 	bool* gpuMatch3;
@@ -1755,7 +1824,7 @@ int main(int argv, char* argc[]){
 	}
 	cudaMalloc((void**)&gpuMatch3, width*height*3*3*sizeof(bool));
 
-	//first frame
+	/// first frame
 	sprintf(fileName, path, initFrame);
 	frame = imread(fileName);
 	frame.convertTo(frameFloat, CV_32FC3);
@@ -1805,13 +1874,13 @@ int main(int argv, char* argc[]){
 			width, height, alphaLearning);
 	}
 
-	//log layer 3
+	/// log layer 3
 	float* gpuMeanDistance3;
 	float* gpuMaxDistance3;
 	cudaMalloc((void**)&gpuMeanDistance3, width*height*3*3*sizeof(float));
 	cudaMalloc((void**)&gpuMaxDistance3, width*height*sizeof(float));
 
-	//first frame
+	/// first frame
 	sprintf(fileName, path, initFrame);
 	frame = imread(fileName);
 	frame.convertTo(frameFloat, CV_32FC3);
@@ -1852,12 +1921,17 @@ int main(int argv, char* argc[]){
 			gpuMeanDistance3, width);
 	}
 
-	//
-	calculateThreshold<<<grid, block>>>(gpuMeanDistance3, 
-		gpuMaxDistance3, width);
+	///
+	if(IsTraining == true){
+		calculateThreshold<<<grid, block>>>(gpuMeanDistance1, 
+			gpuMaxDistance1, width);
+	}
+	else{
+		calculateThresholdWithoutTraining<<<grid, block>>>(gpuMeanDistance1, 
+			gpuMaxDistance1, width);
+	}
 
 	//////////////////////////////////////////////////////////////////////////
-
 	////DEBUG
 	//vector<Mat> tempLayer(3);
 	//char tempName[200];
@@ -1925,17 +1999,16 @@ int main(int argv, char* argc[]){
 	//}
 
 	//return 0;
+	//////////////////////////////////////////////////////////////////////////
 
 
-
-	//start detection and update SMSOM on-line
-
+	/// start detection and update SMSOM on-line
 	float* gpuLabelLayerMatch;
 	cudaMalloc((void**)&gpuLabelLayerMatch, width*height*sizeof(float));
 	cout<<"start detecting the foreground on-line ... ..."<<endl;
 	char key = NULL;
-	int frameNum = endFrame;
-	clock_t startTime = clock();
+	int frameNum = endFrame + 1;
+	//clock_t startTime = clock();
 	namedWindow("foreground", 1);
 	//for(frameNum = 165; frameNum <= 300; ++frameNum){
 	while (key != 'q'){
@@ -1991,16 +2064,18 @@ int main(int argv, char* argc[]){
 
 		cudaMemcpy(output.data, gpuOutput, width*height*sizeof(float), cudaMemcpyDeviceToHost);
 		imshow("foreground", output);
-		sprintf(outputFileName, outputPath, frameNum);
-		output *= 255;
-		output.convertTo(outputFile, CV_8UC3);
-		imwrite(outputFileName, outputFile);
-		key = waitKey(10);
+		if(IsOuput == true){
+			sprintf(outputFileName, outputPath, frameNum);
+			output *= 255;
+			output.convertTo(outputFile, CV_8UC3);
+			imwrite(outputFileName, outputFile);
+		}
+		key = waitKey(1);
 	}
-	clock_t endTime = clock();
-	cout<<"startTime="<<startTime<<endl;
-	cout<<"endTime="<<endTime<<endl;
-	cout<<"speed="<<(double)(endTime-startTime)/CLOCKS_PER_SEC<<endl;
+	//clock_t endTime = clock();
+	//cout<<"startTime="<<startTime<<endl;
+	//cout<<"endTime="<<endTime<<endl;
+	//cout<<"speed="<<(double)(endTime-startTime)/CLOCKS_PER_SEC<<endl;
 	//DEBUG
 	//for(int i = 0; i < 3; ++i){
 	//	Mat outputTemp;
@@ -2022,6 +2097,5 @@ int main(int argv, char* argc[]){
 	//namedWindow("threshold", 1);
 	//imshow("threshold", output);
 	//waitKey(0);
-
 	return 0;
 }

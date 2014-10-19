@@ -1,4 +1,4 @@
-﻿Build started 2014/10/18 18:29:40.
+﻿Build started 2014/10/19 9:00:37.
      1>Project "E:\SOM2\smsom\smsom\smsom.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\smsom.unsuccessfulbuild" because "AlwaysCreate" was specified.
@@ -8,7 +8,7 @@
        Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
        CudaBuild:
          Compiling CUDA source file main.cu...
-         cmd.exe /C "C:\Users\zhaozj\AppData\Local\Temp\tmp3f3233a398f34acd96bab7284fe11f45.cmd"
+         cmd.exe /C "C:\Users\zhaozj\AppData\Local\Temp\tmp09fd89817cf841fcbc46c9aefd323ca6.cmd"
          "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\bin\nvcc.exe" -gencode=arch=compute_10,code=\"sm_10,compute_10\" --use-local-env --cl-version 2010 -ccbin "d:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include"  -G   --keep-dir "Debug" -maxrregcount=0  --machine 32 --compile  -g   -DWIN32 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Zi /RTC1 /MDd  " -o "Debug\main.cu.obj" "E:\SOM2\smsom\smsom\main.cu"
          
          E:\SOM2\smsom\smsom>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\bin\nvcc.exe" -gencode=arch=compute_10,code=\"sm_10,compute_10\" --use-local-env --cl-version 2010 -ccbin "d:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v5.0\include"  -G   --keep-dir "Debug" -maxrregcount=0  --machine 32 --compile  -g   -DWIN32 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Zi /RTC1 /MDd  " -o "Debug\main.cu.obj" "E:\SOM2\smsom\smsom\main.cu" 
@@ -37,7 +37,7 @@
          
      1>E:/SOM2/smsom/smsom/main.cu(1011): warning : variable "index3" was set but never used
          
-         tmpxft_000011c0_00000000-2_main.cudafe1.gpu
+         tmpxft_00000c88_00000000-2_main.cudafe1.gpu
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(876): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(1846): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
@@ -47,7 +47,7 @@
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(5503): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(6405): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(7317): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
-         tmpxft_000011c0_00000000-7_main.cudafe2.gpu
+         tmpxft_00000c88_00000000-7_main.cudafe2.gpu
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(876): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(1846): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
@@ -86,8 +86,8 @@
          
      1>E:/SOM2/smsom/smsom/main.cu(1011): warning : variable "index3" was set but never used
          
-         ptxas C:/Users/zhaozj/AppData/Local/Temp/tmpxft_000011c0_00000000-4_main.ptx, line 130104; : warning : Double is not supported. Demoting to float
-         tmpxft_000011c0_00000000-2_main.cudafe1.cpp
+         ptxas C:/Users/zhaozj/AppData/Local/Temp/tmpxft_00000c88_00000000-4_main.ptx, line 130104; : warning : Double is not supported. Demoting to float
+         tmpxft_00000c88_00000000-2_main.cudafe1.cpp
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(876): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(1846): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
@@ -97,9 +97,9 @@
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(5503): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(6405): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
      1>c:\program files\nvidia gpu computing toolkit\cuda\v5.0\include\math_functions.h(7317): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
-         tmpxft_000011c0_00000000-12_main.ii
-     1>E:/SOM2/smsom/smsom/main.cu(1469): warning C4305: 'initializing' : truncation from 'double' to 'float'
-         Deleting file "tmpxft_000011c0_00000000-8_main.cpp3.o".
+         tmpxft_00000c88_00000000-12_main.ii
+     1>E:/SOM2/smsom/smsom/main.cu(1483): warning C4305: 'initializing' : truncation from 'double' to 'float'
+         Deleting file "tmpxft_00000c88_00000000-8_main.cpp3.o".
        ManifestResourceCompile:
          All outputs are up-to-date.
        Link:
@@ -126,4 +126,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:16.46
+Time Elapsed 00:00:15.68
