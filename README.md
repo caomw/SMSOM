@@ -64,14 +64,12 @@ You have to build yourself. The source code of 3 layer SMSOM-BM is **.\smsom\mai
 
 Demos
 =====
-We have created some demo scripts (see **.\Debug\**) to show the performance of the method. You can use them by:
+Some demo scripts are shown as follows (assuming you are in **Debug** directory, and you have decompressed dataset **[3]** in **E:\Data\**):
 
-* download the dataset from **[3]**
-* decompress the dataset
-* copy @@ into **E:\Data\input\**
-* navigate to **.\Debug**, and double click **demo1.bat** (perfectly safe)
-
-You can try more data if you get used to this pattern of using the software.
+* fountain01: ``smsom train 1 399 E:\\Data\\dynamicBackground\\fountain01\\input\\in%06d.jpg``
+* highway: ``smsom nottrain E:\\Data\\baseline\\highway\\input\\in%06d.jpg``
+* traffic: ``smsom train 129 200 E:\\Data\\cameraJitter\\traffic\\input\\in%06d.jpg``
+* ladeSide: ``smsom train 1 999 E:\\Data\\thermal\\lakeSide\\input\\in%06d.jpg``
 
 
 
