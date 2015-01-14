@@ -24,7 +24,7 @@ An implementation of our unpublished paper **[1]**, and the experiment results o
 ###For Windows users:
 
 
-The exutable binary file is **.\Debug\smsom.exe**; therefore, you should first use **cmd** in Windows to navigate to the directory **Debug**. Please ENSURE Windows can find OpenCV library, and you have CUDA compatible GPU installed in your computer.
+The executable is **.\Debug\smsom.exe**; therefore, you should first use **cmd** in Windows to navigate to the directory **Debug**. Please ENSURE Windows can find OpenCV library, and you have CUDA compatible GPU installed in your computer.
 
 
 Then you have two options:
