@@ -4,11 +4,11 @@
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="SMSOM for Background Modeling : Stacked Multi-layer Self-Organizing Map for Background Modeling">
+    <meta name="description" content="SMSOM-BM : Stacked Multi-layer Self-Organizing Map for Background Modeling">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>SMSOM for Background Modeling</title>
+    <title>SMSOM-BM</title>
   </head>
 
   <body>
@@ -18,7 +18,7 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/zhaozj89/SMSOM">View on GitHub</a>
 
-          <h1 id="project_title">SMSOM for Background Modeling</h1>
+          <h1 id="project_title">SMSOM-BM</h1>
           <h2 id="project_tagline">Stacked Multi-layer Self-Organizing Map for Background Modeling</h2>
 
             <section id="downloads">
@@ -31,98 +31,99 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h1>
-<a id="stacked-multi-layer-self-organizing-map-for-background-modeling-smsom-bm" class="anchor" href="#stacked-multi-layer-self-organizing-map-for-background-modeling-smsom-bm" aria-hidden="true"><span class="octicon octicon-link"></span></a>Stacked Multi-layer Self-Organizing Map for Background Modeling (SMSOM-BM)</h1>
-
-<p>An implementation of our unpublished paper <strong>[1]</strong>, and the experiment results of <strong>[1]</strong> are based on it. If you have any question, please feel free to contact <a href="mailto:zhaozj89@gmail.com">zhaozj89@gmail.com</a>.</p>
+        <hr>
 
 <h1>
-<a id="preferred-working-environment" class="anchor" href="#preferred-working-environment" aria-hidden="true"><span class="octicon octicon-link"></span></a>Preferred working environment</h1>
+<a id="authors" class="anchor" href="#authors" aria-hidden="true"><span class="octicon octicon-link"></span></a>Authors</h1>
 
-<ul>
-<li><p>Windows 7 (64bit)</p></li>
-<li><p>Visual Studio 2010</p></li>
-<li><p>OpenCV 2.4.5</p></li>
-<li><p>CUDA 5.0</p></li>
-</ul>
+<p><a href="http://changedetection.net/">Zhenjie Zhao</a></p>
 
-<h1>
-<a id="how-to-use" class="anchor" href="#how-to-use" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to use</h1>
+<p><a href="http://cc.nankai.edu.cn/Teachers/Introduce.aspx?TID=zhangxb">Xuebo Zhang</a></p>
 
-<h3>
-<a id="for-windows-users" class="anchor" href="#for-windows-users" aria-hidden="true"><span class="octicon octicon-link"></span></a>For Windows users:</h3>
+<p><a href="http://cc.nankai.edu.cn/Teachers/Introduce.aspx?TID=fangyc">Yongchun Fang</a></p>
 
-<p>The executable is <strong>.\Debug\smsom.exe</strong>; therefore, you should first use <strong>cmd</strong> in Windows to navigate to the directory <strong>Debug</strong>. Please ENSURE Windows can find OpenCV library, and you have CUDA compatible GPU installed in your computer.</p>
-
-<p>Then you have two options:</p>
-
-<ul>
-<li>
-<p>If you have foreground free traning images, then execute:</p>
-
-<p><code>smsom train &lt;start_frame_number&gt; &lt;end_frame_number&gt; &lt;input_file_name&gt; &lt;output_file_name&gt;</code></p>
-
-<p>where <code>&lt;start_frame_number&gt;</code> and <code>&lt;end_frame_number&gt;</code> stand for the index range of the training images; <code>&lt;input_file_name&gt;</code>     is the format of the input image's name, and the last parameter <code>&lt;output_file_name&gt;</code> is optional, if you omit it, then the      output images are just shown in you screen, but not stored in your computer. </p>
-
-<p>For example, if I put the input images in: <strong>E:\Data\input\</strong>, 
-the image files' name format is: <strong>in000001.jpg</strong> (any number), and I use 1-100 images to train the model, then I can execute:</p>
-
-<p><code>smsom train 1 100 E:\\Data\\input\\in%06d.jpg E:\\Data\\results\\bin%06d.jpg</code></p>
-
-<p>where I put the result images in <strong>E:\Data\results</strong>.</p>
-
-<p>or</p>
-
-<p><code>smsom train 1 100 E:\\Data\\input\\in%06d.jpg</code></p>
-
-<p>where I do not store the output images.</p>
-</li>
-<li>
-<p>If you do not have foreground free training images, you can execute:</p>
-
-<p><code>smsom nottrain &lt;input_file_name&gt; &lt;output_file_name&gt;</code></p>
-
-<p>where the meanings of <code>&lt;input_file_name&gt;</code> and <code>&lt;output_file_name&gt;</code> (optional) are the same as the previous case. In this situation, we set the threshold tau=0.06 (see <strong>[1]</strong> for more details). </p>
-</li>
-</ul>
-
-<h3>
-<a id="for-linux-users" class="anchor" href="#for-linux-users" aria-hidden="true"><span class="octicon octicon-link"></span></a>For Linux users:</h3>
-
-<p>You have to build yourself. The source code of 3 layer SMSOM-BM is <strong>.\smsom\main.cu</strong>, and you can refer to <strong>[2]</strong> for how to use CUDA on Linux platform.</p>
+<hr>
 
 <h1>
-<a id="demos" class="anchor" href="#demos" aria-hidden="true"><span class="octicon octicon-link"></span></a>Demos</h1>
+<a id="abstract" class="anchor" href="#abstract" aria-hidden="true"><span class="octicon octicon-link"></span></a>Abstract</h1>
 
-<p>Some demo scripts are shown as follows (assuming you are in <strong>Debug</strong> directory, and you have decompressed dataset <strong>[3]</strong> in <strong>E:\Data\</strong>):</p>
+<p>In this paper, a new background modeling method called Stacked Multi-layer Self-Organizing Map Background Model (SMSOM-BM) is proposed, which presents several merits such as strong representative ability for complex scenarios, easy to use, and so on. In order to enhance the representative ability of the background model and make the parameters learned automatically, the recently developed idea of Representative Learning (or Deep Learning) is elegantly employed to extend the existing single-layer Self-Organizing Map Background Model to a multilayer
+one (namely, the proposed SMSOM-BM). As a consequence, SMSOM-BM gains several merits including strong representative ability to learn background model of challenging scenarios, and automatic determination for most network parameters. More specifically, every pixel is modeled by a Stacked Multi-layer Self-Organizing Map (SMSOM), and spatial consistency is considered at each layer. By introducing a novel over-layer filtering process, we can train the background model layer by layer in an efficient manner. Furthermore, for real-time performance consideration, we have implemented the proposed method using NVIDIA CUDA platform. Comparative experimental results show superior performance of the proposed approach.</p>
 
-<ul>
-<li>fountain01: <code>smsom train 1 399 E:\\Data\\dynamicBackground\\fountain01\\input\\in%06d.jpg</code>
-</li>
-<li>highway: <code>smsom nottrain E:\\Data\\baseline\\highway\\input\\in%06d.jpg</code>
-</li>
-<li>traffic: <code>smsom train 129 200 E:\\Data\\cameraJitter\\traffic\\input\\in%06d.jpg</code>
-</li>
-<li>ladeSide: <code>smsom train 1 999 E:\\Data\\thermal\\lakeSide\\input\\in%06d.jpg</code>
-</li>
-</ul>
+<hr>
 
 <h1>
-<a id="references" class="anchor" href="#references" aria-hidden="true"><span class="octicon octicon-link"></span></a>References</h1>
+<a id="paper" class="anchor" href="#paper" aria-hidden="true"><span class="octicon octicon-link"></span></a>Paper</h1>
 
-<p>[1] Zhenjie Zhao, Xuebo Zhang, and Yongchun Fang. Stacked Multi-layer Self-Organizing Map for
-Background Modeling. Submitted to IEEE Transactions on Image Processing.</p>
+<p>You can download the paper <a href="http://changedetection.net/">here</a>.</p>
 
-<p>[2] <a href="http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/#axzz3DimlP7Yp">http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/#axzz3DimlP7Yp</a></p>
+<hr>
 
-<p>[3] <a href="http://www.changedetection.net/">http://www.changedetection.net/</a></p>
+<h1>
+<a id="code" class="anchor" href="#code" aria-hidden="true"><span class="octicon octicon-link"></span></a>Code</h1>
+
+<p>The source code can be found at <a href="https://github.com/zhaozj89/SMSOM">here</a>. Please refer to README to use it.</p>
+
+<hr>
+
+<h1>
+<a id="dateset" class="anchor" href="#dateset" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dateset</h1>
+
+<p><a href="http://changedetection.net/">CDnet 2012</a> dateset is used in this paper, and we only use <em>Baseline</em>, <em>Dynamic Background</em>, <em>Camera Jitter</em>, and <em>Thermal</em>. Please refer to the paper for more details.</p>
+
+<hr>
+
+<h1>
+<a id="some-results" class="anchor" href="#some-results" aria-hidden="true"><span class="octicon octicon-link"></span></a>Some results</h1>
+
+<h2>
+<a id="highway" class="anchor" href="#highway" aria-hidden="true"><span class="octicon octicon-link"></span></a>highway</h2>
+
+<p>
+your browser does not support the video tag
+</p>
+
+<h2>
+<a id="fall" class="anchor" href="#fall" aria-hidden="true"><span class="octicon octicon-link"></span></a>fall</h2>
+
+<p>
+your browser does not support the video tag
+</p>
+
+<h2>
+<a id="fountain" class="anchor" href="#fountain" aria-hidden="true"><span class="octicon octicon-link"></span></a>fountain</h2>
+
+<p>
+your browser does not support the video tag
+</p>
+
+<h2>
+<a id="traffic" class="anchor" href="#traffic" aria-hidden="true"><span class="octicon octicon-link"></span></a>traffic</h2>
+
+<p>
+your browser does not support the video tag
+</p>
+
+<h2>
+<a id="lakeside" class="anchor" href="#lakeside" aria-hidden="true"><span class="octicon octicon-link"></span></a>lakeSide</h2>
+
+<p>
+your browser does not support the video tag
+</p>
+
+<hr>
+
+<h1>
+<a id="how-to-cite" class="anchor" href="#how-to-cite" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to cite</h1>
+
+<p>coming soon ...</p>
       </section>
     </div>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">SMSOM for Background Modeling maintained by <a href="https://github.com/zhaozj89">zhaozj89</a></p>
+        <p class="copyright">SMSOM-BM maintained by <a href="https://github.com/zhaozj89">zhaozj89</a></p>
         <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
