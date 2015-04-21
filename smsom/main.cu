@@ -1,38 +1,39 @@
-//////////////////////////////////////////////////////////////////////////
-/// An implementation of our paper [1], see https://github.com/zhaozj89/SMSOM for more details.
-/// If you have any question, please feel free to contact zhaozj89@gmail.com
-///
-/// created 01/2014
-/// revised#1 02/2014
-/// revised#2 06/2014
-/// revised#3 08/2014
-/// revised#4 10/2014
-///
-/// [1] Zhenjie Zhao, Xuebo Zhang, and Yongchun Fang. Stacked Multi-layer Self-Organizing Map for Background Modeling.
-//////////////////////////////////////////////////////////////////////////
+/*
+ * This single source code is a straightforward implementation of our paper [1]. See http://zhaozj89.github.io/SMSOM/ for more details. 
+ * Written by Zhenjie Zhao, if you have any question, please feel free to contact <zhaozj89@gmail.com>.
+ * 
+ * The executable smsom.exe in /SMSOM/Debug is built under the following environment:
+ * 1. Visual Studio 2010
+ * 2. CUDA 5.0
+ * 3. OpenCV 2.4.5
+ * 4. Windows 7 (64 bit)
+ * You can use the executable directly in a similar environment. Alternatively, you can build it in other environments manually. See README.md file for more details.
+ *
+ * [1] Zhenjie Zhao, Xuebo Zhang, and Yongchun Fang. Stacked Multi-layer Self-Organizing Map for Background Modeling. IEEE Transactions on Image Processing, 2015, Accepted.
+ */
 
-/// cuda5.0
+// cuda5.0
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-#include <device_functions.h>
+#include "device_functions.h"
 
-/// OpenCV
+// OpenCV
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
-/// std
+// std
 #include <iostream>
 #include <vector>
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
 
-///
+//
 using namespace cv;
 using namespace std;
 
-///
+//
 __device__ const float PI = 3.1415926;
 __device__ float gaussKernel[3][3] = {1/16.0, 2/16.0, 1/16.0, 2/16.0, 4/16.0, 2/16.0, 1/16.0, 2/16.0, 1/16.0};
 
@@ -69,10 +70,10 @@ __device__ float distance(float h1, float s1, float v1,
 			pow(v1 - v2, 2));
 }
 
-///
+//
 __global__ void initLayer(float* input, float* output, int width){
 	int x = blockDim.x*blockIdx.x + threadIdx.x;
-	int y = blockDim.y*blockIdx.y + threadIdx.y; /// thread index
+	int y = blockDim.y*blockIdx.y + threadIdx.y; // thread index
 
 	for (int j=0; j<3; ++j){
 		for (int i=0; i<3; ++i){
@@ -81,14 +82,14 @@ __global__ void initLayer(float* input, float* output, int width){
 	}
 }
 
-///
+//
 __global__ void compete(float* modelH, float* modelS, float* modelV, 
 	float* frameH, float* frameS, float* frameV, 
 	bool* match, int width){
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
 		int y = blockDim.y*blockIdx.y + threadIdx.y;
 
-		//used to calculate the distance
+		// used to calculate the distance
 		float pointFrame[3];
 		float pointModel[9][3];
 
@@ -134,7 +135,7 @@ __global__ void competeWithFilter(float* model1H, float* model1S, float* model1V
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
 		int y = blockDim.y*blockIdx.y + threadIdx.y;
 
-		//used to calculate the distance
+		// used to calculate the distance
 		float pointFrame[3];
 		float pointModel[9][3];
 
@@ -203,7 +204,7 @@ __global__ void competeWithFilter2(float* model1H, float* model1S, float* model1
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
 		int y = blockDim.y*blockIdx.y + threadIdx.y;
 
-		//used to calculate the distance
+		// used to calculate the distance
 		float pointFrame[3];
 		float pointModel[9][3];
 
@@ -279,11 +280,11 @@ __global__ void competeWithFilter2(float* model1H, float* model1S, float* model1
 					}
 				}
 				match[(y*3+mj[index])*width*3+(x*3+mi[index])] = true;
-			}//if
-		}//if
+			} // if
+		} // if
 }
 
-/// update the background model
+// update the background model
 __global__ void cooperate(float* modelH, float* modelS, float* modelV, 
 	float* backupH, float* backupS, float* backupV,
 	float* frameH, float* frameS, float* frameV,
@@ -296,7 +297,7 @@ __global__ void cooperate(float* modelH, float* modelS, float* modelV,
 	for(int j = 0; j < 3; ++j){
 		for(int i = 0; i < 3; ++i){
 			m = j*3+i;
-			//center
+			// center
 			if(match[(y*3+j)*width*3+(x*3+i)] == true){
 				modelH[(y*3+j)*width*3+(x*3+i)] = 
 					(1-alpha*gaussKernel[1][1])*backupH[(y*3+j)*width*3+(x*3+i)]
@@ -308,7 +309,7 @@ __global__ void cooperate(float* modelH, float* modelS, float* modelV,
 					(1-alpha*gaussKernel[1][1])*backupV[(y*3+j)*width*3+(x*3+i)] + 
 					alpha*gaussKernel[1][1]*(frameV[y*width+x]);
 			}
-			//left up
+			// left up
 			if (  (x+xlu[m])>=0 && (y+ylu[m])>=0 && 
 				match[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i] == true  ){
 					modelH[(y*3+j)*width*3+(x*3+i)] = 
@@ -321,7 +322,7 @@ __global__ void cooperate(float* modelH, float* modelS, float* modelV,
 						(1-alpha*gaussKernel[2][2])*backupV[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i]
 					+ alpha*gaussKernel[2][2]*(frameV[(y+ylu[m])*width+(x+xlu[m])]);
 			}
-			//up
+			// up
 			if (  (y+yu[m])>=0 && 
 				match[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i] == true  ){
 					modelH[(y*3+j)*width*3+(x*3+i)] = 
@@ -334,7 +335,7 @@ __global__ void cooperate(float* modelH, float* modelS, float* modelV,
 						(1-alpha*gaussKernel[2][1])*backupV[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i]
 					+ alpha*gaussKernel[2][1]*(frameV[(y+yu[m])*width+(x+xu[m])]);
 			}
-			//right up
+			// right up
 			if (  (x+xru[m])<=width && (y+yru[m])>=0 && 
 				match[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i] == true  ){
 					modelH[(y*3+j)*width*3+(x*3+i)] = 
@@ -347,7 +348,7 @@ __global__ void cooperate(float* modelH, float* modelS, float* modelV,
 						(1-alpha*gaussKernel[2][0])*backupV[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i]
 					+ alpha*gaussKernel[0][2]*(frameV[(y+yru[m])*width+(x+xru[m])]);
 			}
-			//right
+			// right
 			if (  (x+xr[m])<=width && 
 				match[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i] == true  ){
 					modelH[(y*3+j)*width*3+(x*3+i)] = 
@@ -360,7 +361,7 @@ __global__ void cooperate(float* modelH, float* modelS, float* modelV,
 						(1-alpha*gaussKernel[1][0])*backupV[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i]
 					+ alpha*gaussKernel[1][0]*(frameV[(y+yr[m])*width+(x+xr[m])]);
 			}
-			//right down
+			// right down
 			if (  (x+xrd[m])<=width && (y+yrd[m])>=height && 
 				match[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i] ==true  ){
 					modelH[(y*3+j)*width*3+(x*3+i)] = 
@@ -373,7 +374,7 @@ __global__ void cooperate(float* modelH, float* modelS, float* modelV,
 						(1-alpha*gaussKernel[0][0])*backupV[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i]
 					+ alpha*gaussKernel[0][0]*(frameV[(y+yrd[m])*width+(x+xrd[m])]);
 			}
-			//down
+			// down
 			if (  (y+yd[m])>=height && 
 				match[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i] == true  ){
 					modelH[(y*3+j)*width*3+(x*3+i)] = 
@@ -386,7 +387,7 @@ __global__ void cooperate(float* modelH, float* modelS, float* modelV,
 						(1-alpha*gaussKernel[0][1])*backupV[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i]
 					+ alpha*gaussKernel[0][1]*(frameV[(y+yd[m])*width+(x+xd[m])]);
 			}
-			//left down7
+			// left down7
 			if (  (y+yld[m])>=height && (x+xld[m])>=0 && 
 				match[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i] == true  ){
 					modelH[(y*3+j)*width*3+(x*3+i)] =
@@ -399,7 +400,7 @@ __global__ void cooperate(float* modelH, float* modelS, float* modelV,
 						(1-alpha*gaussKernel[0][2])*backupV[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i]
 					+ alpha*gaussKernel[0][2]*(frameV[(y+yld[m])*width+(x+xld[m])]);
 			}
-			//left
+			// left
 			if (  (x+xl[m])>=0 && 
 				match[((y+yl[m])*3+j)*width*3+(x+xl[m])*3+i] == true  ){
 					modelH[(y*3+j)*width*3+(x*3+i)] = 
@@ -426,7 +427,7 @@ __global__ void cooperateWithFilter(float* model1H, float* model1S, float* model
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
 		int y = blockDim.y*blockIdx.y + threadIdx.y;
 
-		//used to calculate the distance
+		// used to calculate the distance
 		float pointFrame[3];
 		float pointModel[9][3];
 
@@ -458,7 +459,7 @@ __global__ void cooperateWithFilter(float* model1H, float* model1S, float* model
 			for(int j = 0; j < 3; ++j){
 				for(int i = 0; i < 3; ++i){
 					m = j*3+i;
-					//center
+					// center
 					if(match[(y*3+j)*width*3+(x*3+i)] == true){
 						model2H[(y*3+j)*width*3+(x*3+i)] = 
 							(1-alpha*gaussKernel[1][1])*backup2H[(y*3+j)*width*3+(x*3+i)]
@@ -470,7 +471,7 @@ __global__ void cooperateWithFilter(float* model1H, float* model1S, float* model
 							(1-alpha*gaussKernel[1][1])*backup2V[(y*3+j)*width*3+(x*3+i)] + 
 							alpha*gaussKernel[1][1]*(frameV[y*width+x]);
 					}
-					//left up
+					// left up
 					if (  (x+xlu[m])>=0 && (y+ylu[m])>=0 && 
 						match[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -483,7 +484,7 @@ __global__ void cooperateWithFilter(float* model1H, float* model1S, float* model
 								(1-alpha*gaussKernel[2][2])*backup2V[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i]
 							+ alpha*gaussKernel[2][2]*(frameV[(y+ylu[m])*width+(x+xlu[m])]);
 					}
-					//up
+					// up
 					if (  (y+yu[m])>=0 && 
 						match[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -496,7 +497,7 @@ __global__ void cooperateWithFilter(float* model1H, float* model1S, float* model
 								(1-alpha*gaussKernel[2][1])*backup2V[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i]
 							+ alpha*gaussKernel[2][1]*(frameV[(y+yu[m])*width+(x+xu[m])]);
 					}
-					//right up
+					// right up
 					if (  (x+xru[m])<=width && (y+yru[m])>=0 && 
 						match[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -509,7 +510,7 @@ __global__ void cooperateWithFilter(float* model1H, float* model1S, float* model
 								(1-alpha*gaussKernel[2][0])*backup2V[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i]
 							+ alpha*gaussKernel[0][2]*(frameV[(y+yru[m])*width+(x+xru[m])]);
 					}
-					//right
+					// right
 					if (  (x+xr[m])<=width && 
 						match[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -522,7 +523,7 @@ __global__ void cooperateWithFilter(float* model1H, float* model1S, float* model
 								(1-alpha*gaussKernel[1][0])*backup2V[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i]
 							+ alpha*gaussKernel[1][0]*(frameV[(y+yr[m])*width+(x+xr[m])]);
 					}
-					//right down
+					// right down
 					if (  (x+xrd[m])<=width && (y+yrd[m])>=height && 
 						match[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i] ==true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -535,7 +536,7 @@ __global__ void cooperateWithFilter(float* model1H, float* model1S, float* model
 								(1-alpha*gaussKernel[0][0])*backup2V[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i]
 							+ alpha*gaussKernel[0][0]*(frameV[(y+yrd[m])*width+(x+xrd[m])]);
 					}
-					//down
+					// down
 					if (  (y+yd[m])>=height && 
 						match[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -548,7 +549,7 @@ __global__ void cooperateWithFilter(float* model1H, float* model1S, float* model
 								(1-alpha*gaussKernel[0][1])*backup2V[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i]
 							+ alpha*gaussKernel[0][1]*(frameV[(y+yd[m])*width+(x+xd[m])]);
 					}
-					//left down7
+					// left down7
 					if (  (y+yld[m])>=height && (x+xld[m])>=0 && 
 						match[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] =
@@ -561,7 +562,7 @@ __global__ void cooperateWithFilter(float* model1H, float* model1S, float* model
 								(1-alpha*gaussKernel[0][2])*backup2V[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i]
 							+ alpha*gaussKernel[0][2]*(frameV[(y+yld[m])*width+(x+xld[m])]);
 					}
-					//left
+					// left
 					if (  (x+xl[m])>=0 && 
 						match[((y+yl[m])*3+j)*width*3+(x+xl[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -591,7 +592,7 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
 		int y = blockDim.y*blockIdx.y + threadIdx.y;
 
-		//used to calculate the distance
+		// used to calculate the distance
 		float pointFrame[3];
 		float pointModel[9][3];
 
@@ -643,7 +644,7 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 				for(int j = 0; j < 3; ++j){
 					for(int i = 0; i < 3; ++i){
 						m = j*3+i;
-						//center
+						// center
 						if(match[(y*3+j)*width*3+(x*3+i)] == true){
 							model3H[(y*3+j)*width*3+(x*3+i)] = 
 								(1-alpha*gaussKernel[1][1])*backup3H[(y*3+j)*width*3+(x*3+i)]
@@ -655,7 +656,7 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 								(1-alpha*gaussKernel[1][1])*backup3V[(y*3+j)*width*3+(x*3+i)] + 
 								alpha*gaussKernel[1][1]*(frameV[y*width+x]);
 						}
-						//left up
+						// left up
 						if (  (x+xlu[m])>=0 && (y+ylu[m])>=0 && 
 							match[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i] == true  ){
 								model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -668,7 +669,7 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 									(1-alpha*gaussKernel[2][2])*backup3V[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i]
 								+ alpha*gaussKernel[2][2]*(frameV[(y+ylu[m])*width+(x+xlu[m])]);
 						}
-						//up
+						// up
 						if (  (y+yu[m])>=0 && 
 							match[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i] == true  ){
 								model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -681,7 +682,7 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 									(1-alpha*gaussKernel[2][1])*backup3V[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i]
 								+ alpha*gaussKernel[2][1]*(frameV[(y+yu[m])*width+(x+xu[m])]);
 						}
-						//right up
+						// right up
 						if (  (x+xru[m])<=width && (y+yru[m])>=0 && 
 							match[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i] == true  ){
 								model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -694,7 +695,7 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 									(1-alpha*gaussKernel[2][0])*backup3V[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i]
 								+ alpha*gaussKernel[0][2]*(frameV[(y+yru[m])*width+(x+xru[m])]);
 						}
-						//right
+						// right
 						if (  (x+xr[m])<=width && 
 							match[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i] == true  ){
 								model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -707,7 +708,7 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 									(1-alpha*gaussKernel[1][0])*backup3V[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i]
 								+ alpha*gaussKernel[1][0]*(frameV[(y+yr[m])*width+(x+xr[m])]);
 						}
-						//right down
+						// right down
 						if (  (x+xrd[m])<=width && (y+yrd[m])>=height && 
 							match[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i] ==true  ){
 								model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -720,7 +721,7 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 									(1-alpha*gaussKernel[0][0])*backup3V[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i]
 								+ alpha*gaussKernel[0][0]*(frameV[(y+yrd[m])*width+(x+xrd[m])]);
 						}
-						//down
+						// down
 						if (  (y+yd[m])>=height && 
 							match[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i] == true  ){
 								model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -733,7 +734,7 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 									(1-alpha*gaussKernel[0][1])*backup3V[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i]
 								+ alpha*gaussKernel[0][1]*(frameV[(y+yd[m])*width+(x+xd[m])]);
 						}
-						//left down7
+						// left down7
 						if (  (y+yld[m])>=height && (x+xld[m])>=0 && 
 							match[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i] == true  ){
 								model3H[(y*3+j)*width*3+(x*3+i)] =
@@ -746,7 +747,7 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 									(1-alpha*gaussKernel[0][2])*backup3V[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i]
 								+ alpha*gaussKernel[0][2]*(frameV[(y+yld[m])*width+(x+xld[m])]);
 						}
-						//left
+						// left
 						if (  (x+xl[m])>=0 && 
 							match[((y+yl[m])*3+j)*width*3+(x+xl[m])*3+i] == true  ){
 								model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -758,11 +759,11 @@ __global__ void cooperateWithFilter2(float* model1H, float* model1S, float* mode
 								model3V[(y*3+j)*width*3+(x*3+i)] = 
 									(1-alpha*gaussKernel[1][2])*backup3V[((y+yl[m])*3+j)*width*3+(x+xl[m])*3+i]
 								+ alpha*gaussKernel[1][2]*(frameV[(y+yl[m])*width+(x+xl[m])]);
-						}//if
-					}//for
-				}//for
-			}//if
-		}//if
+						} // if
+					} // for
+				} // for
+			}  // if
+		} // if
 }
 
 __global__ void initMean(float* modelH, float* modelS, float* modelV, 
@@ -772,7 +773,7 @@ __global__ void initMean(float* modelH, float* modelS, float* modelV,
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
 		int y = blockDim.y*blockIdx.y + threadIdx.y;
 
-		//used to calculate the distance
+		// used to calculate the distance
 		float pointFrame[3];
 		float pointModel[9][3];
 
@@ -798,7 +799,7 @@ __global__ void meanSum(float* modelH, float* modelS, float* modelV,
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
 		int y = blockDim.y*blockIdx.y + threadIdx.y;
 
-		//used to calculate the distance
+		// used to calculate the distance
 		float pointFrame[3];
 		float pointModel[9][3];
 
@@ -828,7 +829,7 @@ __global__ void meanSumWithFilter(float* model1H, float* model1S, float* model1V
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
 		int y = blockDim.y*blockIdx.y + threadIdx.y;
 
-		//used to calculate the distance
+		// used to calculate the distance
 		float pointFrame[3];
 		float pointModel[9][3];
 
@@ -867,7 +868,7 @@ __global__ void meanSumWithFilter(float* model1H, float* model1S, float* model1V
 						)/2;
 				}
 			}
-		}//if
+		} // if
 }
 
 __global__ void meanSumWithFilter2(float* model1H, float* model1S, float* model1V,
@@ -881,7 +882,7 @@ __global__ void meanSumWithFilter2(float* model1H, float* model1S, float* model1
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
 		int y = blockDim.y*blockIdx.y + threadIdx.y;
 
-		//used to calculate the distance
+		// used to calculate the distance
 		float pointFrame[3];
 		float pointModel[9][3];
 
@@ -940,8 +941,8 @@ __global__ void meanSumWithFilter2(float* model1H, float* model1S, float* model1
 							)/2;
 					}
 				}
-			}//if
-		}//if
+			} // if
+		} // if
 }
 
 __global__ void detection(float* inputH, float* inputS, float* inputV,
@@ -997,8 +998,8 @@ __global__ void detection(float* inputH, float* inputS, float* inputV,
 						min2 = distTemp;
 						index2 = j*3 + i;
 					}
-				}//i
-			}//j
+				} // i
+			} // j
 
 			if( min2 <= thresholdLayer2[y*width+x] ){
 				ouput[y*width+x] = 0;
@@ -1018,8 +1019,8 @@ __global__ void detection(float* inputH, float* inputS, float* inputV,
 							min3 = distTemp;
 							index3 = j*3 + i;
 						}
-					}//i
-				}//j
+					} // i
+				} // j
 				
 				if( min3 <= thresholdLayer3[y*width+x] ){
 					ouput[y*width+x] = 0;
@@ -1029,9 +1030,9 @@ __global__ void detection(float* inputH, float* inputS, float* inputV,
 				else{
 					ouput[y*width+x] = 1;
 					labelLayerMatch[y*width+x] = 0;
-				}//else
-			}//else
-		}//else
+				} // else
+			} // else
+		} // else
 }
 
 __global__ void update(float* frameH, float* frameS, float* frameV,
@@ -1047,13 +1048,13 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
 		int y = blockDim.y*blockIdx.y + threadIdx.y;
 
-		//layer1
+		// layer1
 		if(labelLayerMatch[y*width+x] == 1){
 			int m = 0;
 			for(int j = 0; j < 3; ++j){
 				for(int i = 0; i < 3; ++i){
 					m = j*3+i;
-					//center
+					// center
 					if(matchLayer1[(y*3+j)*width*3+(x*3+i)] == true){
 						model1H[(y*3+j)*width*3+(x*3+i)] = 
 							(1-alpha*gaussKernel[1][1])*backup1H[(y*3+j)*width*3+(x*3+i)]
@@ -1065,7 +1066,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 							(1-alpha*gaussKernel[1][1])*backup1V[(y*3+j)*width*3+(x*3+i)] + 
 							alpha*gaussKernel[1][1]*(frameV[y*width+x]);
 					}
-					//left up
+					// left up
 					if (  (x+xlu[m])>=0 && (y+ylu[m])>=0 && 
 						matchLayer1[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i] == true  ){
 							model1H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1078,7 +1079,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[2][2])*backup1V[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i]
 							+ alpha*gaussKernel[2][2]*(frameV[(y+ylu[m])*width+(x+xlu[m])]);
 					}
-					//up
+					// up
 					if (  (y+yu[m])>=0 && 
 						matchLayer1[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i] == true  ){
 							model1H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1091,7 +1092,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[2][1])*backup1V[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i]
 							+ alpha*gaussKernel[2][1]*(frameV[(y+yu[m])*width+(x+xu[m])]);
 					}
-					//right up
+					// right up
 					if (  (x+xru[m])<=width && (y+yru[m])>=0 && 
 						matchLayer1[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i] == true  ){
 							model1H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1104,7 +1105,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[2][0])*backup1V[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i]
 							+ alpha*gaussKernel[0][2]*(frameV[(y+yru[m])*width+(x+xru[m])]);
 					}
-					//right
+					// right
 					if (  (x+xr[m])<=width && 
 						matchLayer1[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i] == true  ){
 							model1H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1117,7 +1118,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[1][0])*backup1V[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i]
 							+ alpha*gaussKernel[1][0]*(frameV[(y+yr[m])*width+(x+xr[m])]);
 					}
-					//right down
+					// right down
 					if (  (x+xrd[m])<=width && (y+yrd[m])>=height && 
 						matchLayer1[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i] ==true  ){
 							model1H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1130,7 +1131,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[0][0])*backup1V[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i]
 							+ alpha*gaussKernel[0][0]*(frameV[(y+yrd[m])*width+(x+xrd[m])]);
 					}
-					//down
+					// down
 					if (  (y+yd[m])>=height && 
 						matchLayer1[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i] == true  ){
 							model1H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1143,7 +1144,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[0][1])*backup1V[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i]
 							+ alpha*gaussKernel[0][1]*(frameV[(y+yd[m])*width+(x+xd[m])]);
 					}
-					//left down7
+					// left down7
 					if (  (y+yld[m])>=height && (x+xld[m])>=0 && 
 						matchLayer1[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i] == true  ){
 							model1H[(y*3+j)*width*3+(x*3+i)] =
@@ -1156,7 +1157,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[0][2])*backup1V[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i]
 							+ alpha*gaussKernel[0][2]*(frameV[(y+yld[m])*width+(x+xld[m])]);
 					}
-					//left
+					// left
 					if (  (x+xl[m])>=0 && 
 						matchLayer1[((y+yl[m])*3+j)*width*3+(x+xl[m])*3+i] == true  ){
 							model1H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1173,13 +1174,13 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 			}
 		}
 
-		//layer2
+		// layer2
 		if(labelLayerMatch[y*width+x] == 2){
 			int m = 0;
 			for(int j = 0; j < 3; ++j){
 				for(int i = 0; i < 3; ++i){
 					m = j*3+i;
-					//center
+					// center
 					if(matchLayer2[(y*3+j)*width*3+(x*3+i)] == true){
 						model2H[(y*3+j)*width*3+(x*3+i)] = 
 							(1-alpha*gaussKernel[1][1])*backup2H[(y*3+j)*width*3+(x*3+i)]
@@ -1191,7 +1192,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 							(1-alpha*gaussKernel[1][1])*backup2V[(y*3+j)*width*3+(x*3+i)] + 
 							alpha*gaussKernel[1][1]*(frameV[y*width+x]);
 					}
-					//left up
+					// left up
 					if (  (x+xlu[m])>=0 && (y+ylu[m])>=0 && 
 						matchLayer2[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1204,7 +1205,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[2][2])*backup2V[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i]
 							+ alpha*gaussKernel[2][2]*(frameV[(y+ylu[m])*width+(x+xlu[m])]);
 					}
-					//up
+					// up
 					if (  (y+yu[m])>=0 && 
 						matchLayer2[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1217,7 +1218,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[2][1])*backup2V[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i]
 							+ alpha*gaussKernel[2][1]*(frameV[(y+yu[m])*width+(x+xu[m])]);
 					}
-					//right up
+					// right up
 					if (  (x+xru[m])<=width && (y+yru[m])>=0 && 
 						matchLayer2[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1230,7 +1231,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[2][0])*backup2V[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i]
 							+ alpha*gaussKernel[0][2]*(frameV[(y+yru[m])*width+(x+xru[m])]);
 					}
-					//right
+					// right
 					if (  (x+xr[m])<=width && 
 						matchLayer2[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1243,7 +1244,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[1][0])*backup2V[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i]
 							+ alpha*gaussKernel[1][0]*(frameV[(y+yr[m])*width+(x+xr[m])]);
 					}
-					//right down
+					// right down
 					if (  (x+xrd[m])<=width && (y+yrd[m])>=height && 
 						matchLayer2[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i] ==true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1256,7 +1257,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[0][0])*backup2V[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i]
 							+ alpha*gaussKernel[0][0]*(frameV[(y+yrd[m])*width+(x+xrd[m])]);
 					}
-					//down
+					// down
 					if (  (y+yd[m])>=height && 
 						matchLayer2[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1269,7 +1270,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[0][1])*backup2V[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i]
 							+ alpha*gaussKernel[0][1]*(frameV[(y+yd[m])*width+(x+xd[m])]);
 					}
-					//left down7
+					// left down7
 					if (  (y+yld[m])>=height && (x+xld[m])>=0 && 
 						matchLayer2[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] =
@@ -1282,7 +1283,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[0][2])*backup2V[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i]
 							+ alpha*gaussKernel[0][2]*(frameV[(y+yld[m])*width+(x+xld[m])]);
 					}
-					//left
+					// left
 					if (  (x+xl[m])>=0 && 
 						matchLayer2[((y+yl[m])*3+j)*width*3+(x+xl[m])*3+i] == true  ){
 							model2H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1299,13 +1300,13 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 			}
 		}
 
-		//layer 3
+		// layer 3
 		if(labelLayerMatch[y*width+x] == 3){
 			int m = 0;
 			for(int j = 0; j < 3; ++j){
 				for(int i = 0; i < 3; ++i){
 					m = j*3+i;
-					//center
+					// center
 					if(matchLayer3[(y*3+j)*width*3+(x*3+i)] == true){
 						model3H[(y*3+j)*width*3+(x*3+i)] = 
 							(1-alpha*gaussKernel[1][1])*backup3H[(y*3+j)*width*3+(x*3+i)]
@@ -1317,7 +1318,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 							(1-alpha*gaussKernel[1][1])*backup3V[(y*3+j)*width*3+(x*3+i)] + 
 							alpha*gaussKernel[1][1]*(frameV[y*width+x]);
 					}
-					//left up
+					// left up
 					if (  (x+xlu[m])>=0 && (y+ylu[m])>=0 && 
 						matchLayer3[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i] == true  ){
 							model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1330,7 +1331,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[2][2])*backup3V[((y+ylu[m])*3+j)*width*3+(x+xlu[m])*3+i]
 							+ alpha*gaussKernel[2][2]*(frameV[(y+ylu[m])*width+(x+xlu[m])]);
 					}
-					//up
+					// up
 					if (  (y+yu[m])>=0 && 
 						matchLayer3[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i] == true  ){
 							model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1343,7 +1344,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[2][1])*backup3V[((y+yu[m])*3+j)*width*3+(x+xu[m])*3+i]
 							+ alpha*gaussKernel[2][1]*(frameV[(y+yu[m])*width+(x+xu[m])]);
 					}
-					//right up
+					// right up
 					if (  (x+xru[m])<=width && (y+yru[m])>=0 && 
 						matchLayer3[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i] == true  ){
 							model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1356,7 +1357,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[2][0])*backup3V[((y+yru[m])*3+j)*width*3+(x+xru[m])*3+i]
 							+ alpha*gaussKernel[0][2]*(frameV[(y+yru[m])*width+(x+xru[m])]);
 					}
-					//right
+					// right
 					if (  (x+xr[m])<=width && 
 						matchLayer3[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i] == true  ){
 							model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1369,7 +1370,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[1][0])*backup3V[((y+yr[m])*3+j)*width*3+(x+xr[m])*3+i]
 							+ alpha*gaussKernel[1][0]*(frameV[(y+yr[m])*width+(x+xr[m])]);
 					}
-					//right down
+					// right down
 					if (  (x+xrd[m])<=width && (y+yrd[m])>=height && 
 						matchLayer3[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i] ==true  ){
 							model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1382,7 +1383,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[0][0])*backup3V[((y+yrd[m])*3+j)*width*3+(x+xrd[m])*3+i]
 							+ alpha*gaussKernel[0][0]*(frameV[(y+yrd[m])*width+(x+xrd[m])]);
 					}
-					//down
+					// down
 					if (  (y+yd[m])>=height && 
 						matchLayer3[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i] == true  ){
 							model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1395,7 +1396,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[0][1])*backup3V[((y+yd[m])*3+j)*width*3+(x+xd[m])*3+i]
 							+ alpha*gaussKernel[0][1]*(frameV[(y+yd[m])*width+(x+xd[m])]);
 					}
-					//left down7
+					// left down7
 					if (  (y+yld[m])>=height && (x+xld[m])>=0 && 
 						matchLayer3[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i] == true  ){
 							model3H[(y*3+j)*width*3+(x*3+i)] =
@@ -1408,7 +1409,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 								(1-alpha*gaussKernel[0][2])*backup3V[((y+yld[m])*3+j)*width*3+(x+xld[m])*3+i]
 							+ alpha*gaussKernel[0][2]*(frameV[(y+yld[m])*width+(x+xld[m])]);
 					}
-					//left
+					// left
 					if (  (x+xl[m])>=0 && 
 						matchLayer3[((y+yl[m])*3+j)*width*3+(x+xl[m])*3+i] == true  ){
 							model3H[(y*3+j)*width*3+(x*3+i)] = 
@@ -1426,7 +1427,7 @@ __global__ void update(float* frameH, float* frameS, float* frameV,
 		}
 }
 	
-/// with training
+// with training
 __global__ void calculateThreshold(float* meanValue, float* maxValue,
 	int width){
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
@@ -1440,13 +1441,9 @@ __global__ void calculateThreshold(float* meanValue, float* maxValue,
 			}
 		}
 		maxValue[y*width+x] = tempMax;
-
-		/// can be adjusted by hand
-		//if( maxValue[y*width+x]<= 0.06 )
-		//	maxValue[y*width+x] = 0.06;
 }
 
-/// without training, we set the minimum value of tao as 0.06
+// without training, we set the minimum value of tao as 0.06
 __global__ void calculateThresholdWithoutTraining(float* meanValue, float* maxValue,
 	int width){
 		int x = blockDim.x*blockIdx.x + threadIdx.x;
@@ -1461,7 +1458,7 @@ __global__ void calculateThresholdWithoutTraining(float* meanValue, float* maxVa
 		}
 		maxValue[y*width+x] = tempMax;
 
-		/// can be adjusted by hand
+		// can be adjusted by hand
 		if( maxValue[y*width+x]<= 0.06 )
 			maxValue[y*width+x] = 0.06;
 }
@@ -1473,38 +1470,36 @@ void help(){
 	cout<<"2. smsom train <start_frame_number> <end_frame_number> <input_file_name>"<<endl<<endl;
 	cout<<"3. smsom nottrain <input_file_name> <output_file_name>"<<endl<<endl;
 	cout<<"4. smsom nottrain <input_file_name> <output_file_name>"<<endl<<endl;
-	cout<<"Please see https://github.com/zhaozj89/SMSOM for more details"<<endl<<endl;
+	cout<<"Please see http://zhaozj89.github.io/SMSOM/ for more details"<<endl<<endl;
 	cout<<"Press 'q' to exit"<<endl<<endl;
 	cout<<">----------------------------------------------------------------------------------------------------------------<"<<endl;
 }
 
-/// 
+// 
 float c1 = 1;
 float c2 = 0.03;
-float alphaLearning = c1*4; /// c1/max weight of the Gaussian kernel
-float alphaAdaption = c2*4; /// c2/max weight of the Gaussian kernel
-int startFrame = 2, endFrame = 50;
+float alphaLearning = c1*4; // c1/max weight of the Gaussian kernel
+float alphaAdaption = c2*4; // c2/max weight of the Gaussian kernel
+int startFrame, endFrame;
 int initFrame = 1;
 
-///
+//
 bool IsTraining;
 bool IsOuput;
 char fileName[200];
 char outputFileName[200];
 char path[200];
 char outputPath[200];
-//char path[200] = "E:\\PreviousResearch\\Data\\CDnet\\CDnet\\dataset\\dynamicBackground\\boats\\input\\in%06d.jpg";
-//char outputPath[200] = "E:\\PreviousResearch\\Data\\CDnet\\CDnet\\results\\dynamicBackground\\boats\\S3SOM3\\bin%06d.png";
 
 int main(int argv, char* argc[]){
 
-	///
+	//
 	if(argv < 3){
 		help();
 		return 0;
 	}
 
-	///
+	//
 	string p2(argc[1]);
 	string tempTrain = "train";
 	string tempNottrain = "nottrain";
@@ -1515,7 +1510,7 @@ int main(int argv, char* argc[]){
 		return 0;
 	}
 
-	///
+	//
 	if(IsTraining == true){
 		if(argv == 6){
 			startFrame = atoi(argc[2]);
@@ -1551,14 +1546,14 @@ int main(int argv, char* argc[]){
 		}
 	}
 
-	/// test whether input is legal
+	// test whether input is legal
 	{
 		if(startFrame > endFrame){
 			cout<<"<start_frame_number> or <end_frame_number> is  illegal, please retry!"<<endl;
 			return 0;
 		}
 		Mat frame;
-		sprintf(fileName, path, initFrame);//read the first frame
+		sprintf(fileName, path, initFrame); // read the first frame
 		frame = imread(fileName, CV_LOAD_IMAGE_COLOR);
 		if(frame.empty()){
 			cout<<"<input_file_name> is illegal, please retry!"<<endl;
@@ -1567,7 +1562,7 @@ int main(int argv, char* argc[]){
 	}
 
 	Mat frame;
-	sprintf(fileName, path, initFrame); /// read the first frame
+	sprintf(fileName, path, initFrame); // read the first frame
 	frame = imread(fileName, CV_LOAD_IMAGE_COLOR);
 	int width = frame.cols;
 	int height = frame.rows;
@@ -1608,17 +1603,17 @@ int main(int argv, char* argc[]){
 	cudaMalloc((void**)&gpuOutput, width*height*sizeof(float));
 	cudaMalloc((void**)&gpuOutputBackup, width*height*sizeof(float));
 
-	dim3 grid(width/16, height/16, 1); /// TODO: ( (width-1)/16+1, (height-1)/16+1, 1 )
+	dim3 grid( (width-1)/16+1, (height-1)/16+1, 1 );
 	dim3 block(16, 16, 1);
 
-	/// Stacked Multi-layer Self Organizing Map Background Model (in this code, 3 layers)
-	/// A layer is composed of 2 parts: train and log
+	// Stacked Multi-layer Self Organizing Map Background Model (in this code, 3 layers)
+	// A layer is composed of 2 parts: train and log
 
-	/// initialize layer 1
+	// initialize layer 1
 	for(int i = 0; i < 3; ++i)
 		initLayer<<<grid, block>>>(gpuInput[i], gpuLayer1[i], width);
 
-	/// train layer 1
+	// train layer 1
 	cout<<"start training layer 1 ... ..."<<endl;
 	for(int i = startFrame; i <= endFrame; ++i){
 		if(i%100 == 0)
@@ -1649,13 +1644,13 @@ int main(int argv, char* argc[]){
 			width, height, alphaLearning);
 	}
 
-	/// log layer 1
+	// log layer 1
 	float* gpuMeanDistance1;
 	float* gpuMaxDistance1;
 	cudaMalloc((void**)&gpuMeanDistance1, width*height*3*3*sizeof(float));
 	cudaMalloc((void**)&gpuMaxDistance1, width*height*sizeof(float));
 	
-	/// first frame
+	// first frame
 	sprintf(fileName, path, initFrame);
 	frame = imread(fileName);
 	frame.convertTo(frameFloat, CV_32FC3);
@@ -1692,7 +1687,7 @@ int main(int argv, char* argc[]){
 			gpuMeanDistance1, width);
 	}
 
-	///
+	//
 	if(IsTraining == true){
 		calculateThreshold<<<grid, block>>>(gpuMeanDistance1, 
 			gpuMaxDistance1, width);
@@ -1703,7 +1698,7 @@ int main(int argv, char* argc[]){
 	}
 
 
-	/// train layer 2
+	// train layer 2
 	vector<float*> gpuLayer2(3);
 	vector<float*> gpuLayer2Backup(3);
 	bool* gpuMatch2;
@@ -1713,7 +1708,7 @@ int main(int argv, char* argc[]){
 	}
 	cudaMalloc((void**)&gpuMatch2, width*height*3*3*sizeof(bool));
 
-	/// first frame
+	// first frame
 	sprintf(fileName, path, initFrame);
 	frame = imread(fileName);
 	frame.convertTo(frameFloat, CV_32FC3);
@@ -1723,7 +1718,7 @@ int main(int argv, char* argc[]){
 	for(int i = 0; i < 3; ++i)
 		cudaMemcpy(gpuInput[i], input[i].data, width*height*sizeof(float), cudaMemcpyHostToDevice);
 	for(int i = 0; i < 3; ++i)
-		initLayer<<<grid, block>>>(gpuInput[i], gpuLayer2[i], width); /// TODO: better initialization
+		initLayer<<<grid, block>>>(gpuInput[i], gpuLayer2[i], width); // TODO: better initialization
 
 	cout<<"start training layer 2 ... ..."<<endl;
 	for(int i = startFrame; i <= endFrame; ++i){
@@ -1759,13 +1754,13 @@ int main(int argv, char* argc[]){
 			width, height, alphaLearning);
 	}
 
-	/// log layer 2
+	// log layer 2
 	float* gpuMeanDistance2;
 	float* gpuMaxDistance2;
 	cudaMalloc((void**)&gpuMeanDistance2, width*height*3*3*sizeof(float));
 	cudaMalloc((void**)&gpuMaxDistance2, width*height*sizeof(float));
 
-	/// first frame
+	// first frame
 	sprintf(fileName, path, initFrame);
 	frame = imread(fileName);
 	frame.convertTo(frameFloat, CV_32FC3);
@@ -1804,7 +1799,7 @@ int main(int argv, char* argc[]){
 			gpuMeanDistance2, width);
 	}
 
-	///
+	//
 	if(IsTraining == true){
 		calculateThreshold<<<grid, block>>>(gpuMeanDistance1, 
 			gpuMaxDistance1, width);
@@ -1814,7 +1809,7 @@ int main(int argv, char* argc[]){
 			gpuMaxDistance1, width);
 	}
 
-	/// train layer 3
+	// train layer 3
 	vector<float*> gpuLayer3(3);
 	vector<float*> gpuLayer3Backup(3);
 	bool* gpuMatch3;
@@ -1824,7 +1819,7 @@ int main(int argv, char* argc[]){
 	}
 	cudaMalloc((void**)&gpuMatch3, width*height*3*3*sizeof(bool));
 
-	/// first frame
+	// first frame
 	sprintf(fileName, path, initFrame);
 	frame = imread(fileName);
 	frame.convertTo(frameFloat, CV_32FC3);
@@ -1834,7 +1829,7 @@ int main(int argv, char* argc[]){
 	for(int i = 0; i < 3; ++i)
 		cudaMemcpy(gpuInput[i], input[i].data, width*height*sizeof(float), cudaMemcpyHostToDevice);
 	for(int i = 0; i < 3; ++i)
-		initLayer<<<grid, block>>>(gpuInput[i], gpuLayer3[i], width);//TODO: better initialization
+		initLayer<<<grid, block>>>(gpuInput[i], gpuLayer3[i], width); // TODO: better initialization
 
 	cout<<"start training layer 3 ... ..."<<endl;
 	for(int i = startFrame; i <= endFrame; ++i){
@@ -1874,13 +1869,13 @@ int main(int argv, char* argc[]){
 			width, height, alphaLearning);
 	}
 
-	/// log layer 3
+	// log layer 3
 	float* gpuMeanDistance3;
 	float* gpuMaxDistance3;
 	cudaMalloc((void**)&gpuMeanDistance3, width*height*3*3*sizeof(float));
 	cudaMalloc((void**)&gpuMaxDistance3, width*height*sizeof(float));
 
-	/// first frame
+	// first frame
 	sprintf(fileName, path, initFrame);
 	frame = imread(fileName);
 	frame.convertTo(frameFloat, CV_32FC3);
@@ -1921,7 +1916,7 @@ int main(int argv, char* argc[]){
 			gpuMeanDistance3, width);
 	}
 
-	///
+	//
 	if(IsTraining == true){
 		calculateThreshold<<<grid, block>>>(gpuMeanDistance1, 
 			gpuMaxDistance1, width);
@@ -2002,15 +1997,15 @@ int main(int argv, char* argc[]){
 	//////////////////////////////////////////////////////////////////////////
 
 
-	/// start detection and update SMSOM on-line
+	// start detection and update SMSOM on-line
 	float* gpuLabelLayerMatch;
 	cudaMalloc((void**)&gpuLabelLayerMatch, width*height*sizeof(float));
 	cout<<"start detecting the foreground on-line ... ..."<<endl;
 	char key = NULL;
 	int frameNum = endFrame + 1;
-	//clock_t startTime = clock();
+	// clock_t startTime = clock();
 	namedWindow("foreground", 1);
-	//for(frameNum = 165; frameNum <= 300; ++frameNum){
+	// for(frameNum = 165; frameNum <= 300; ++frameNum){
 	while (key != 'q'){
 		++frameNum;
 		if(frameNum%100 == 0)

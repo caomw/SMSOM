@@ -47,6 +47,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\opencv2.4.5\mybuild\install\include\opencv2;C:\opencv2.4.5\mybuild\install\include\opencv;C:\opencv2.4.5\mybuild\install\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\opencv2.4.5\mybuild\install\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
