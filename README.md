@@ -112,5 +112,6 @@ Background Modeling. Submitted to IEEE Transactions on Image Processing.
 
 [Matlab tool]: http://wordpress-jodoin.dmi.usherb.ca/static/code/MatlabCode2012.zip
 
+------------------------------------------------------------
 
 All rights reserved.
