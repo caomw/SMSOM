@@ -3,7 +3,7 @@
 
 # SMSOM-BM
 
-SMSOM-BM stands for Stacked Multi-layer Self-Organizing Map Background Model, which is a background modeling method presented in our paper **[1]**. This repository is a clone of our original work flow (source code, executable, tools, etc., explained below), and the experiments of **[1]** are based on it. Please see [project homepage][project homepage] for more information about SMSOM-BM. You can continue this README file to find how to use it. If you have any questions, comments, or bugs reports regarding to SMSOM-BM, please contact zhaozj89@gmail.com, or leave me a request.
+SMSOM-BM stands for Stacked Multi-layer Self-Organizing Map Background Model, which is a background modeling method presented in our paper **[1]**. This repository is a clone of our original work flow (source code, executable, tools, etc., explained below), and the experiments of **[1]** are based on it. Please see [project homepage][project homepage] for more information about SMSOM-BM. You can continue this README file to find how to use it. If you have any questions, comments, or bug reports regarding to SMSOM-BM, please contact zhaozj89@gmail.com, or pull a request.
 
 The file tree of this repository is:
 
