@@ -101,7 +101,7 @@ You should use the Matlab script **.\tools\median_filter.m** to do a 5X5 median 
 # References
 
 [1] Zhenjie Zhao, Xuebo Zhang, and Yongchun Fang. Stacked Multi-layer Self-Organizing Map for
-Background Modeling. Submitted to IEEE Transactions on Image Processing.
+Background Modeling. In: *IEEE Transactions on Image Processing*, vol. 24, no. 9, pp. 2841-2850, Sep 2015.
 
 [2] http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/#axzz3DimlP7Yp
 
